@@ -10,13 +10,6 @@ const port = 3000
 const DATA_FILE = path.join(__dirname, 'public', 'jsons', 'data.json')
 
 let urlDatabase = {}
-// try {
-//     const urlData = fs.readFileSync(DATA_FILE)
-//     urlDatabase = JSON.parse(urlData)
-//     console.log(urlDatabase)
-// } catch (err) {
-//     console.error('Error reading the file:', err)
-// }
 
 fs.readFile(DATA_FILE, 'utf8', (err, data) => {
     if(err) {
@@ -30,7 +23,7 @@ fs.readFile(DATA_FILE, 'utf8', (err, data) => {
     } catch (parseErr) {
         console.error('Error parsing the JSON Data:', parseErr)
     }
-})
+})  
 
 
 app.engine('.hbs', engine({extname: '.hbs'}))
@@ -43,15 +36,25 @@ app.get('/', (req, res) => {
     res.render('index')
 })
 
-app.post('/', (req, res) => {
+app.post('/shorten', (req, res) => {
     const originalURL = req.body.inputURL
     if (!originalURL) {
         res.render('index', {error: "Please provide a URL"})
         return
     }
 
-    const shortURL = shorten(originalURL)
+    const shortURL = `http://localhost:3000/${shorten(originalURL)}`
     res.render('index', {originalURL: originalURL, shortURL: shortURL})
+})
+
+app.get('/:shortURLCode', (req, res) => {
+    const shortURLCode = req.params.shortURLCode
+    const fullURL = urlDatabase[shortURLCode]
+    if (fullURL){
+        res.redirect(fullURL)
+    }
+    res.redirect('/?error=This URL does not exist')
+    
 })
 
 
@@ -60,12 +63,14 @@ app.listen(port, () => {
 })
 
 function shorten(inputURL) {
-    if (urlDatabase[inputURL]) {
-        return urlDatabase[inputURL]
+    for (const [key, val] of Object.entries(urlDatabase)) {
+        if (val === inputURL) {
+            return key
+        }
     }
-
-    const shortUrl = generateShortURL(5)
-    urlDatabase[inputURL] = `http://localhost:3000/${shortUrl}`
+       
+    const shortURLCode = generateShortURL(5)
+    urlDatabase[shortURLCode] = inputURL
     fs.writeFile(DATA_FILE, JSON.stringify(urlDatabase), (err) => {
         if (err) {
             console.error('Error writing the file: ', err)
@@ -73,7 +78,7 @@ function shorten(inputURL) {
         }
         console.log('File has been saved')
     })
-    return `http://localhost:3000/${shortUrl}`
+    return shortURLCode
 }
 
 function generateShortURL(shortUrlLength) {
