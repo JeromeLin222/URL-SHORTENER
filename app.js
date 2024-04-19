@@ -53,7 +53,7 @@ app.get('/:shortURLCode', (req, res) => {
     if (fullURL){
         res.redirect(fullURL)
     }
-    res.redirect('/?error=This URL does not exist')
+    res.render('error', {shortURL: `http://localhost:3000/${shortURLCode}`})
     
 })
 

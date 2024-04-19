@@ -24,14 +24,11 @@
   {{#if shortURL}}
     <div class="card text-center mt-1">
       <div class="card-body">
-        <h5 class="card-title">OriginalURL {{originalURL}}</h5>
-        <p class="card-text">Your shorten URL: <a id="shortURL" href="{{originalURL}}">{{shortURL}}</p>
-        <a href="#" onclick="copyURL()" class="btn btn-primary">copy</a>
+        <p class="card-title">Original URL {{originalURL}}</p>
+        <h5 class="card-text">Your shorten URL: <a id="shortURL" href="{{originalURL}}">{{shortURL}}</h5>
+        <a href="#" onclick="copyURL()" class="btn btn-primary">Copy URL</a>
       </div>
-      <div class="card-footer text-muted">
-        2 days ago
-      </div>
-  </div>
+    </div>
   {{/if}}
 </div>
 
