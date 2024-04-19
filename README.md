@@ -19,7 +19,7 @@ npm --version
 ```
 
 ## Installation
-First, clone the repository to your machine, the run the following commands in the project directory to install necessary dependencies:
+First, clone the repository to your machine, then run the following commands in the project directory to install necessary dependencies:
 ```bash
 git clone https://github.com/JeromeLin222/URL-SHORTENER.git
 cd URL-SHORTENER
