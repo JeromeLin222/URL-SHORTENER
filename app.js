@@ -1,29 +1,9 @@
-const e = require('express')
 const express = require('express')
 const { engine } = require('express-handlebars')
-const fs = require('fs')
-const { url } = require('inspector')
-const path = require('path')
 const app =express()
-const port = 3000
-
-const DATA_FILE = path.join(__dirname, 'public', 'jsons', 'data.json')
-
-let urlDatabase = {}
-
-fs.readFile(DATA_FILE, 'utf8', (err, data) => {
-    if(err) {
-        console.error('Error reading the file', err)
-        return
-    }
-    try {
-        const urlData = JSON.parse(data)
-        urlDatabase = urlData
-        console.log(urlDatabase)
-    } catch (parseErr) {
-        console.error('Error parsing the JSON Data:', parseErr)
-    }
-})  
+const { port } = require('./utilities/config')
+const { loadUrlDatabase, getUrl } = require('./utilities/urlDatabase')
+const { shorten } = require('./utilities/shortener')
 
 
 app.engine('.hbs', engine({extname: '.hbs'}))
@@ -43,51 +23,51 @@ app.post('/shorten', (req, res) => {
         return
     }
 
-    const shortURL = `http://localhost:3000/${shorten(originalURL)}`
+    const shortURL = `http://localhost:${port}/${shorten(originalURL)}`
     res.render('index', {originalURL: originalURL, shortURL: shortURL})
 })
 
 app.get('/:shortURLCode', (req, res) => {
-    const shortURLCode = req.params.shortURLCode
-    const fullURL = urlDatabase[shortURLCode]
+    const fullURL = getUrl(req.params.shortURLCode)
     if (fullURL){
         res.redirect(fullURL)
+    } else {
+        res.render('error', {shortURL: `http://localhost:${port}/${req.params.shortURLCode}`, port: `${port}`})
     }
-    res.render('error', {shortURL: `http://localhost:3000/${shortURLCode}`})
-    
 })
 
 
 app.listen(port, () => {
     console.log(`express server is running on http://localhost:${port}`)
+    loadUrlDatabase()
 })
 
-function shorten(inputURL) {
-    for (const [key, val] of Object.entries(urlDatabase)) {
-        if (val === inputURL) {
-            return key
-        }
-    }
+// function shorten(inputURL) {
+//     for (const [key, val] of Object.entries(urlDatabase)) {
+//         if (val === inputURL) {
+//             return key
+//         }
+//     }
        
-    const shortURLCode = generateShortURL(5)
-    urlDatabase[shortURLCode] = inputURL
-    fs.writeFile(DATA_FILE, JSON.stringify(urlDatabase), (err) => {
-        if (err) {
-            console.error('Error writing the file: ', err)
-            return
-        }
-        console.log('File has been saved')
-    })
-    return shortURLCode
-}
+//     const shortURLCode = generateShortURL(5)
+//     urlDatabase[shortURLCode] = inputURL
+//     fs.writeFile(DATA_FILE, JSON.stringify(urlDatabase), (err) => {
+//         if (err) {
+//             console.error('Error writing the file: ', err)
+//             return
+//         }
+//         console.log('File has been saved')
+//     })
+//     return shortURLCode
+// }
 
-function generateShortURL(shortUrlLength) {
-    const BASE_62_CHAR = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-    let result = ""
-    for (let i = 0; i < shortUrlLength; i++) {
-        const randomIndex = Math.floor(Math.random() * 62)
-        result += BASE_62_CHAR[randomIndex]
+// function generateShortURL(shortUrlLength) {
+//     const BASE_62_CHAR = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+//     let result = ""
+//     for (let i = 0; i < shortUrlLength; i++) {
+//         const randomIndex = Math.floor(Math.random() * 62)
+//         result += BASE_62_CHAR[randomIndex]
         
-    }
-    return result
-}
+//     }
+//     return result
+// }
